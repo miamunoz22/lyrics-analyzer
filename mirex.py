@@ -1,7 +1,13 @@
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
 import re
+import matplotlib.pyplot as plt
+import nltk
+nltk.download('stopwords')
+from nltk.corpus import stopwords
+from nltk.stem.porter import PorterStemmer
+import numpy as np
+import os
+
 
 ''' The three formats in Mirex data follow the same file 
 naming scheme: so file 004.mp3, 004.txt and 004.mid 
@@ -18,25 +24,80 @@ songs.isnull().sum()
 songs[songs.isnull().any(axis=1)] # Shows 6 rows with null values
 
 # Cleaning the data
-songs.dropna(inplace=True)
+songs.dropna(inplace=True) # Leaves us with 897 entries
 songs['Year'] = songs['Year'].astype(int)
 songs['Last Modified'] = pd.to_datetime(songs['Last Modified'], format='%d-%m-%Y')
 
 # Re-assign the volues in filename column to drop .mp3 and change header to ID
 songs['Filename'] = songs['Filename'].str.replace('.mp3', '')
-songs.rename(columns={'Filename': 'ID'}, inplace=True)
-songs['Cluster'] = None
-songs['Description'] = None
-songs['Lyrics'] = None
+songs.rename(columns={'Filename': 'track_id'}, inplace=True)
+
+# Creating a simplified dataframe
+lyrics_df = pd.DataFrame(songs['track_id'])
+lyrics_df['cluster'] = None
+lyrics_df['description'] = None
+lyrics_df['lyrics'] = None
+
 
 # importing the bat file that has info on clusters for each song
 with open('dataset/split-by-categories-lyrics.bat', 'r') as bat_file:
     for line in bat_file:
         if re.search(r'\bmove\b', line):
-            file = re.search(r'(\d+)', line, re.IGNORECASE).group()
-            cluster = re.search(r'Cluster \s*(\d+)', line, re.IGNORECASE).group(1)
-            description = re.search(r'\\(.*?)\\', line, re.IGNORECASE).group(1)
-            songs.loc[songs['ID'] == file, 'Cluster'] = cluster
-            songs.loc[songs['ID'] == file, 'Description'] = description
+            file = re.search(r'(\d+)', line).group()
+            cluster = re.search(r'Cluster \s*(\d+)', line).group(1)
+            description = re.search(r'\\(.*?)\\', line).group(1)
+            lyrics_df.loc[songs['track_id'] == file, 'cluster'] = cluster
+            lyrics_df.loc[songs['track_id'] == file, 'description'] = description
+
+# helper function to open and read lyrics txt file
+def get_lyrics(track_id):
+    path = 'dataset/Lyrics/' + track_id + '.txt'
+    try:
+        with open(path, 'r') as file:
+            lyrics = file.read()
+            assert type(lyrics) == str
+            assert lyrics is not None
+            return lyrics
+    except:
+        return None
+                
+# helper function to pre-process lyrics: remove stop words, get word roots, etc.
+def clean_lyrics(lyrics):
+    try:
+        tokens = re.findall(r'\b[^\W\d_]+\b', lyrics)
+        stemmer = PorterStemmer()
+        tokens = [stemmer.stem(word.lower()) for word in tokens if word.lower() not in stopwords.words('english')]
+        return ' '.join(tokens)
+    except:
+        return None
             
+lyrics_df['lyrics'] = lyrics_df['track_id'].apply(get_lyrics)
+lyrics_df['lyrics'] = lyrics_df['lyrics'].apply(clean_lyrics)
+corpus = list(lyrics_df['lyrics'])
+
 plt.hist(songs['Year'], bins=20, edgecolor='black')
+
+# One-hot-encode the description
+'''
+INSERT CODE HERE
+'''
+
+# Bag-of-words
+'''
+INSERT CODE HERE
+'''
+
+# Train
+'''
+INSERT CODE HERE
+'''
+
+# Test
+'''
+INSERT CODE HERE
+'''
+
+# Plot results
+'''
+INSERT CODE HERE
+'''
