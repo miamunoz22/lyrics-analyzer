@@ -1,17 +1,17 @@
-import pandas as pd
-import re
-import matplotlib.pyplot as plt
-import nltk
-import seaborn as sns
-nltk.download('stopwords')
-from nltk.corpus import stopwords
-from nltk.stem.porter import PorterStemmer
-import numpy as np
-import os
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.naive_bayes import MultinomialNB
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.naive_bayes import MultinomialNB
+from nltk.stem.porter import PorterStemmer
+from nltk.corpus import stopwords
+import matplotlib.pyplot as plt
+nltk.download('stopwords')
+import seaborn as sns
+import pandas as pd
+import numpy as np
+import nltk
+import os
+import re
 
 ''' The three formats in Mirex data follow the same file 
 naming scheme: so file 004.mp3, 004.txt and 004.mid 
