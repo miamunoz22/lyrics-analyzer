@@ -2,12 +2,16 @@ import pandas as pd
 import re
 import matplotlib.pyplot as plt
 import nltk
+import seaborn as sns
 nltk.download('stopwords')
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 import numpy as np
 import os
-
+from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 ''' The three formats in Mirex data follow the same file 
 naming scheme: so file 004.mp3, 004.txt and 004.mid 
@@ -71,33 +75,41 @@ def clean_lyrics(lyrics):
     except:
         return None
             
+# Adding lyrics to the lyrics_df and cleaning them within the dataframe
 lyrics_df['lyrics'] = lyrics_df['track_id'].apply(get_lyrics)
 lyrics_df['lyrics'] = lyrics_df['lyrics'].apply(clean_lyrics)
+
+# Shows 133 songs with no lyrics in dataset - matches what mirex data gives
+lyrics_df[lyrics_df.isnull().any(axis=1)]
+lyrics_df.dropna(inplace=True)
+
 corpus = list(lyrics_df['lyrics'])
+labels = list(lyrics_df['cluster'])
+#labels = list(lyrics_df['description'])
 
-plt.hist(songs['Year'], bins=20, edgecolor='black')
-
-# One-hot-encode the description
-'''
-INSERT CODE HERE
-'''
+x_train, x_test, y_train, y_test = train_test_split(corpus, labels, test_size=0.3, random_state=22)
 
 # Bag-of-words
-'''
-INSERT CODE HERE
-'''
+bag = CountVectorizer(max_features=1000)
+x_train_bag = bag.fit_transform(x_train)
+x_test_bag = bag.transform(x_test)
 
-# Train
-'''
-INSERT CODE HERE
-'''
+# Initialize/train MNB
+model = MultinomialNB()
+model.fit(x_train_bag, y_train)
 
-# Test
-'''
-INSERT CODE HERE
-'''
+# Test the model
+predictions = model.predict(x_test_bag)
+
+# Evaluate the model
+acc = accuracy_score(y_test, predictions)
+print(f"Accuracy: {acc:.2f}")
 
 # Plot results
-'''
-INSERT CODE HERE
-'''
+confused = confusion_matrix(y_test, predictions)
+sns.heatmap(confused, annot=True, fmt="d", cmap="Purples")
+plt.xlabel("Predicted Labels")
+plt.ylabel("True Labels")
+plt.show()
+
+print(classification_report(y_test, predictions))
