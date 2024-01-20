@@ -1,17 +1,19 @@
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
+from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 nltk.download('stopwords')
-import seaborn as sns
+import seaborn as sb
 import pandas as pd
 import numpy as np
 import nltk
 import os
 import re
+
 
 ''' The three formats in Mirex data follow the same file 
 naming scheme: so file 004.mp3, 004.txt and 004.mid 
@@ -74,6 +76,7 @@ def clean_lyrics(lyrics):
         return ' '.join(tokens)
     except:
         return None
+              
             
 # Adding lyrics to the lyrics_df and cleaning them within the dataframe
 lyrics_df['lyrics'] = lyrics_df['track_id'].apply(get_lyrics)
@@ -89,9 +92,13 @@ labels = list(lyrics_df['cluster'])
 
 x_train, x_test, y_train, y_test = train_test_split(corpus, labels, test_size=0.3, random_state=22)
 
-# Bag-of-words
-bag = CountVectorizer(max_features=1000)
-x_train_bag = bag.fit_transform(x_train)
+# tf-idf matrix
+vec = TfidfVectorizer()
+tfidf_matrix = vec.fit_transform(corpus)
+terms = vec.get_feature_names()
+
+
+
 x_test_bag = bag.transform(x_test)
 
 # Initialize/train MNB
