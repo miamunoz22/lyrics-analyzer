@@ -1,24 +1,31 @@
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_selection import chi2
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from nltk.stem.porter import PorterStemmer
 from nltk.corpus import stopwords
+from wordcloud import WordCloud
 import matplotlib.pyplot as plt
+import nltk
 nltk.download('stopwords')
-import seaborn as sns
+import seaborn as sb
 import pandas as pd
 import numpy as np
-import nltk
 import os
 import re
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import LinearSVC
+from sklearn.model_selection import cross_val_score
+
 
 ''' The three formats in Mirex data follow the same file 
 naming scheme: so file 004.mp3, 004.txt and 004.mid 
 correspond to the same song. There are 903 mp3 files but only
 764 lyrics files in this dataset'''
 
-# Using song-cleaner.csv because the original dataset had one row with an extra column
+# Using song-cleaner.csv because the original dataset had one row with an extra value
 songs = pd.read_csv('dataset/songs-cleaner.csv')
 
 # Inspecting the data
@@ -80,6 +87,18 @@ def clean_lyrics(lyrics):
 lyrics_df['lyrics'] = lyrics_df['track_id'].apply(get_lyrics)
 lyrics_df['lyrics'] = lyrics_df['lyrics'].apply(clean_lyrics)
 
+'''
+# Checking the imbalance in the Target Variable
+plt.figure(figsize=[18,8])
+plot = sb.countplot(lyrics_df['cluster'], palette = 'inferno')
+for p in plot.patches:
+    plot.annotate(format(p.get_height(), '.2f'), (p.get_x() + p.get_width() / 2., p.get_height()), ha = 'center', va = 'center', xytext = (0, 10), textcoords = 'offset points')
+
+plt.title('Cluster Data Count & Spread', fontdict={'fontsize': 20, 'fontweight': 5, 'color': 'Green'})
+plt.xticks(rotation=90)
+plt.show()
+'''
+
 # Shows 133 songs with no lyrics in dataset - matches what mirex data gives
 lyrics_df[lyrics_df.isnull().any(axis=1)]
 lyrics_df.dropna(inplace=True)
@@ -90,14 +109,26 @@ labels = list(lyrics_df['cluster'])
 
 x_train, x_test, y_train, y_test = train_test_split(corpus, labels, test_size=0.3, random_state=22)
 
-# Bag-of-words
-bag = CountVectorizer(max_features=1000)
-x_train_bag = bag.fit_transform(x_train)
-x_test_bag = bag.transform(x_test)
+# tf-idf matrix
+vec = TfidfVectorizer(max_features = 2000, sublinear_tf=True, norm='l2', encoding='latin-1', ngram_range=(1,2))
+train_matrix = vec.fit_transform(corpus).toarray()
+test_matrix = vec.transform(x_test)
+
+
+
+
+
+
+
+from sklearn.svm import LinearSVC
+clf = LinearSVC(random_state=0)
+
+clf.fit(train_matrix,y_train)
+y_test_pred=clf.predict(tf_x_test)
 
 # Initialize/train MNB
 model = MultinomialNB()
-model.fit(x_train_bag, y_train)
+model.fit(terms, y_train)
 
 # Test the model
 predictions = model.predict(x_test_bag)
