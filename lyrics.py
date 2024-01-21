@@ -1,21 +1,18 @@
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.naive_bayes import MultinomialNB
-
-import matplotlib.pyplot as plt
-import seaborn as sb
+import nltk
+from nltk.stem.porter import PorterStemmer
+from nltk.corpus import stopwords
+nltk.download('stopwords')
 import pandas as pd
 import numpy as np
 import os
-
+import re
 
 ''' The three formats in Mirex data follow the same file 
 naming scheme: so file 004.mp3, 004.txt and 004.mid 
 correspond to the same song. There are 903 mp3 files but only
 764 lyrics files in this dataset'''
 
-# Using song-cleaner.csv because the original dataset had one row with an extra value
+# Using song-cleaner.csv because the original dataset had one row with an extra column
 songs = pd.read_csv('dataset/songs-cleaner.csv')
 
 # Inspecting the data
@@ -80,46 +77,3 @@ lyrics_df['lyrics'] = lyrics_df['lyrics'].apply(clean_lyrics)
 # Shows 133 songs with no lyrics in dataset - matches what mirex data gives
 lyrics_df[lyrics_df.isnull().any(axis=1)]
 lyrics_df.dropna(inplace=True)
-
-corpus = list(lyrics_df['lyrics'])
-labels = list(lyrics_df['cluster'])
-
-x_train, x_test, y_train, y_test = train_test_split(corpus, labels, test_size=0.3, random_state=222)
-
-cv = CountVectorizer()
-train_cv = cv.fit_transform(x_train)
-
-tfidf = TfidfVectorizer(max_features = 2000, sublinear_tf=True, norm='l2', encoding='latin-1', ngram_range=(1,2))
-train_tfidf = tfidf.fit_transform(x_train).toarray()
-test_tfidf = tfidf.transform(x_test)
-
-params = {'alpha': [0.1, .01, .001, 0.5, 1.0, 2.0, 5.0], 'fit_prior': [True, False]}
-
-# Use GridSearchCV for hyperparameter tuning
-grid_search = GridSearchCV(model, params, cv=10, scoring='accuracy')
-grid_search.fit(train_tfidf, y_train)
-
-# Get the best hyperparameters
-best_alpha = grid_search.best_params_['alpha']
-fit_prior = grid_search.best_params_['fit_prior']
-
-# Train the MNB model with the best hyperparameters
-best_mnb_classifier = MultinomialNB(alpha=best_alpha, fit_prior=fit_prior)
-best_mnb_classifier.fit(train_tfidf, y_train)
-
-# Evaluate the model on the test set
-predictions = best_mnb_classifier.predict(test_tfidf)
-
-# Evaluate the model
-acc = accuracy_score(y_test, predictions)
-print(f"Accuracy: {acc:.2f}")
-
-# Plot results
-confused = confusion_matrix(y_test, predictions)
-sns.heatmap(confused, annot=True, fmt="d", cmap="Purples")
-plt.xlabel("Predicted Labels")
-plt.ylabel("True Labels")
-plt.show()
-
-print(classification_report(y_test, predictions))
-

@@ -1,10 +1,12 @@
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.preprocessing import LabelEncoder
 from sklearn.naive_bayes import MultinomialNB
-from sklearn.svm import LinearSVC
+
+from keras.preprocessing.sequence import pad_sequences
+from keras.layers import Embedding, LSTM, Dense
+from keras.models import Sequential
 
 import matplotlib.pyplot as plt
 import seaborn as sb
@@ -24,30 +26,11 @@ labels = list(lyrics_df['cluster'])
 
 x_train, x_test, y_train, y_test = train_test_split(corpus, labels, test_size=0.3, random_state=22)
 
-# Looping through the various models of interest
-
-models = [
-    mnb_model = MultinomialNB(),
-    svm_model = LinearSVC(),
-    LogisticRegression(random_state=0)
-    RandomForestClassifier(n_estimators=200, max_depth=3, random_state=0)
-]
-
-for i 
-
 # tf-idf matrix
 vec = TfidfVectorizer(max_features = 2000, sublinear_tf=True, norm='l2', encoding='latin-1', ngram_range=(1,2))
 train_matrix = vec.fit_transform(corpus).toarray()
 test_matrix = vec.transform(x_test)
 
-clf = LinearSVC(random_state=0)
-
-clf.fit(train_matrix,y_train)
-y_test_pred=clf.predict(tf_x_test)
-
-# Initialize/train MNB
-model = MultinomialNB()
-model.fit(terms, y_train)
 
 # Test the model
 predictions = model.predict(x_test_bag)
