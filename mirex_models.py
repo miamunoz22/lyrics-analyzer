@@ -1,5 +1,5 @@
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.model_selection import train_test_split, GridSearchCV, cross_val_score
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
@@ -22,45 +22,47 @@ corpus = list(lyrics_df['lyrics'])
 labels = list(lyrics_df['cluster'])
 #labels = list(lyrics_df['description'])
 
-x_train, x_test, y_train, y_test = train_test_split(corpus, labels, test_size=0.3, random_state=22)
-
-# Looping through the various models of interest
-
-models = [
-    mnb_model = MultinomialNB(),
-    svm_model = LinearSVC(),
-    LogisticRegression(random_state=0)
-    RandomForestClassifier(n_estimators=200, max_depth=3, random_state=0)
-]
-
-for i 
-
 # tf-idf matrix
 vec = TfidfVectorizer(max_features = 2000, sublinear_tf=True, norm='l2', encoding='latin-1', ngram_range=(1,2))
-train_matrix = vec.fit_transform(corpus).toarray()
-test_matrix = vec.transform(x_test)
+features = vec.fit_transform(corpus).toarray()
 
-clf = LinearSVC(random_state=0)
+x_train, x_test, y_train, y_test = train_test_split(features, labels, test_size=0.3, random_state=22)
 
-clf.fit(train_matrix,y_train)
-y_test_pred=clf.predict(tf_x_test)
+# Looping through the various models of interest
+models = [MultinomialNB(), LinearSVC(), LogisticRegression(random_state=0), RandomForestClassifier(n_estimators=200, max_depth=3, random_state=0)]
 
-# Initialize/train MNB
-model = MultinomialNB()
-model.fit(terms, y_train)
+CV = 5
+cv_df = pd.DataFrame(index=range(CV * len(models)))
 
-# Test the model
-predictions = model.predict(x_test_bag)
+entries = []
 
-# Evaluate the model
-acc = accuracy_score(y_test, predictions)
-print(f"Accuracy: {acc:.2f}")
+for model in models:
+    model_name = model.__class__.__name__
+    accs = cross_val_score(model, features, labels, scoring='accuracy', cv=CV)
+    for fold, accuracy in enumerate(accs):
+        entries.append((model_name, fold, accuracy))
+    
+cv_df = pd.DataFrame(entries, columns=['model_name', 'fold', 'accuracy'])
 
-# Plot results
-confused = confusion_matrix(y_test, predictions)
-sns.heatmap(confused, annot=True, fmt="d", cmap="Purples")
-plt.xlabel("Predicted Labels")
-plt.ylabel("True Labels")
+sb.boxplot(x='model_name', y='accuracy', data=cv_df)
+sb.stripplot(x='model_name', y='accuracy', data=cv_df, size=8, jitter=True, edgecolor="gray", linewidth=2)
 plt.show()
 
-print(classification_report(y_test, predictions))
+# Evaluating the best model
+clf = LogisticRegression(random_state=0)
+clf.fit(x_train,y_train)
+y_pred=clf.predict(x_test)
+
+cluster_ext  = ['Cluster 1', 'Cluster 2', 'Cluster 3', 'Cluster 4', 'Cluster 5']
+
+# Plot results
+confused = confusion_matrix(y_test, y_pred)
+fig, ax = plt.subplots(figsize=(10,10))
+sb.heatmap(confused, annot=True, fmt='d', xticklabels=cluster_ext, yticklabels=cluster_ext, cmap='Purples')
+plt.ylabel('Actual')
+plt.xlabel('Predicted')
+plt.show()
+
+print(classification_report(y_test, y_pred))
+
+# Achieved a whopping accuracy of 33% !
