@@ -21,6 +21,7 @@ lyrics_df = lyrics.lyrics_df
 corpus = list(lyrics_df['lyrics'])
 labels = list(lyrics_df['cluster'])
 #labels = list(lyrics_df['description'])
+cluster_ext  = ['Cluster 1', 'Cluster 2', 'Cluster 3', 'Cluster 4', 'Cluster 5']
 
 # tf-idf matrix
 vec = TfidfVectorizer(max_features = 2000, sublinear_tf=True, norm='l2', encoding='latin-1', ngram_range=(1,2))
@@ -48,12 +49,26 @@ sb.boxplot(x='model_name', y='accuracy', data=cv_df)
 sb.stripplot(x='model_name', y='accuracy', data=cv_df, size=8, jitter=True, edgecolor="gray", linewidth=2)
 plt.show()
 
-# Evaluating the best model
-clf = LogisticRegression(random_state=0)
-clf.fit(x_train,y_train)
-y_pred=clf.predict(x_test)
+# Choosing Logistic Regression model as the model to move forward with
+params = {'C': [0.001, 0.01, 0.1, 1, 10, 100], 'penalty': ['l1', 'l2'], 'solver': ['liblinear', 'lbfgs'], 'class_weight': [None, 'balanced', {0: 1, 1: 5}], 'tol': [1e-4, 1e-3, 1e-2]}
 
-cluster_ext  = ['Cluster 1', 'Cluster 2', 'Cluster 3', 'Cluster 4', 'Cluster 5']
+# Use GridSearchCV for hyperparameter tuning
+grid_search = GridSearchCV(clf, params, cv=5, scoring='accuracy')
+grid_search.fit(x_train, y_train)
+
+# Get the best hyperparameters
+best_c = grid_search.best_params_['C']
+best_penalty = grid_search.best_params_['penalty']
+best_solver = grid_search.best_params_['solver']
+best_weight = grid_search.best_params_['class_weight']
+best_tol = grid_search.best_params_['tol']
+
+# Train the LogReg model with the best hyperparameters
+best_log_classifier = LogisticRegression(C=best_c, penalty=best_penalty, solver=best_solver, class_weight=best_weight, tol=best_tol)
+best_log_classifier.fit(x_train, y_train)
+
+# Evaluate the model on the test set
+y_pred = best_log_classifier.predict(x_test)
 
 # Plot results
 confused = confusion_matrix(y_test, y_pred)
@@ -65,4 +80,4 @@ plt.show()
 
 print(classification_report(y_test, y_pred))
 
-# Achieved a whopping accuracy of 33% !
+# Achieved a whopping accuracy of 38% !
