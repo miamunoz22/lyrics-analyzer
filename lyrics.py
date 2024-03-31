@@ -26,7 +26,7 @@ songs.dropna(inplace=True) # Leaves us with 897 entries
 songs['Year'] = songs['Year'].astype(int)
 songs['Last Modified'] = pd.to_datetime(songs['Last Modified'], format='%d-%m-%Y')
 
-# Re-assign the volues in filename column to drop .mp3 and change header to ID
+# Re-assign the values in filename column to drop .mp3 and change header to ID
 songs['Filename'] = songs['Filename'].str.replace('.mp3', '')
 songs.rename(columns={'Filename': 'track_id'}, inplace=True)
 

@@ -80,4 +80,6 @@ plt.show()
 
 print(classification_report(y_test, y_pred))
 
-# Achieved a whopping accuracy of 38% !
+# Achieved a whopping accuracy of 38% 
+
+# INSERT COLUMN CHART WITH THE RESULTS
