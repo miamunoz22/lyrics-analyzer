@@ -17,7 +17,7 @@ songs = pd.read_csv('dataset/songs-cleaner.csv')
 
 # Inspecting the data
 songs.head
-songs.shape
+songs.info()
 songs.isnull().sum()
 songs[songs.isnull().any(axis=1)] # Shows 6 rows with null values
 
@@ -77,3 +77,8 @@ lyrics_df['lyrics'] = lyrics_df['lyrics'].apply(clean_lyrics)
 # Shows 133 songs with no lyrics in dataset - matches what mirex data gives
 lyrics_df[lyrics_df.isnull().any(axis=1)]
 lyrics_df.dropna(inplace=True)
+lyrics_df.reset_index(inplace=True)
+
+lyrics_df.info()
+dtype_dict = {'track_id': 'string', 'cluster': 'string', 'description': 'string', 'lyrics': 'string'}
+lyrics_df = lyrics_df.astype(dtype_dict)
