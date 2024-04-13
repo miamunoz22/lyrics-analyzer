@@ -52,6 +52,7 @@ plt.show()
 # Choosing Logistic Regression model as the model to move forward with
 params = {'C': [0.001, 0.01, 0.1, 1, 10, 100], 'penalty': ['l1', 'l2'], 'solver': ['liblinear', 'lbfgs'], 'class_weight': [None, 'balanced', {0: 1, 1: 5}], 'tol': [1e-4, 1e-3, 1e-2]}
 
+'''
 # Use GridSearchCV for hyperparameter tuning
 grid_search = GridSearchCV(clf, params, cv=5, scoring='accuracy')
 grid_search.fit(x_train, y_train)
@@ -82,4 +83,4 @@ print(classification_report(y_test, y_pred))
 
 # Achieved a whopping accuracy of 38% 
 
-# INSERT COLUMN CHART WITH THE RESULTS
+# INSERT COLUMN CHART WITH THE RESULTS'''
