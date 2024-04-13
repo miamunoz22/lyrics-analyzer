@@ -111,11 +111,10 @@ plt.imshow(wordcloud, interpolation='bilinear')
 plt.axis('off')
 plt.show()
 
-# Group the data by the "cluster" column
 grouped = merged.groupby('cluster')
 
 # Create a word cloud for each cluster and display them using subplots
-fig, axes = plt.subplots(5, 1, figsize=(15, 10))  # Adjust the size as needed
+fig, axes = plt.subplots(5, 1, figsize=(15, 10))
 for (cluster, data), ax in zip(grouped, axes.flatten()):
     # Join all lyrics for the current cluster into a single string
     all_lyrics = ' '.join(data['lyrics'])
@@ -130,3 +129,5 @@ for (cluster, data), ax in zip(grouped, axes.flatten()):
 
 plt.tight_layout()
 plt.show()
+
+'''According to these word clouds, it sounds like artists have got to know a lot about love. '''
