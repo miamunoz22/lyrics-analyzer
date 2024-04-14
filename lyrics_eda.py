@@ -3,15 +3,17 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import seaborn as sb
-import lyrics
+import prep
 from prettytable import PrettyTable
+from wordcloud import WordCloud
+import mirex_models
 
 
 ''' After some preliminary cleaning of the songs and the lyrics data, this file
 explores the data further to get any useful insights ahead of modeling. '''
 
-lyrics_df = lyrics.lyrics_df
-songs = lyrics.songs
+lyrics_df = prep.lyrics_df
+songs = prep.songs
 merged = pd.merge(lyrics_df.iloc[:,1:], songs, on='track_id', how='inner')
 descriptions = {'1': 'Passionate, rousing, confident, boisterous, rowdy', 
                 '2': 'Rollicking, cheerful, fun, sweet, amiable/good natured', 
@@ -26,30 +28,18 @@ merged['track_id'] = merged['track_id'].astype('string')
 merged.duplicated('track_id').any() # Check for any duplicate tracks
 
 
-# Exploring counts and distributions
-fig, axes = plt.subplots(2, 1, figsize=(15, 8)) 
+# Exploring distributions
+fig, axes = plt.subplots(2, 1, figsize=(15, 12)) 
 
-# Cluster count
-sb.countplot(lyrics_df['cluster'], ax=axes[0])
+sb.countplot(lyrics_df['cluster'], ax=axes[0]) # Cluster count
 axes[0].set_title('Cluster Data Count & Spread')
 
-# Songs by year in the original dataset
-sb.countplot(songs['Year'], ax=axes[1])
-axes[1].set_title('Songs by Year')
-
-plt.setp(axes[1].get_xticklabels(), rotation=90) 
-plt.tight_layout()
-plt.show()
-plt.close()
-
-plt.figure(figsize=(10,6)) 
-sb.boxplot(x='Year', data=songs)
+sb.boxplot(x='Year', data=songs) # Songs by year distribution
 plt.title('Songs by Year - boxplot')
 plt.show()
 plt.close()
 
-
-
+# Table with corpus stats
 tracks = len(merged['track_id'])
 uni_artists = len(set(merged['Artist']))
 avg_per_artists =round(tracks / uni_artists,0)
@@ -59,7 +49,6 @@ corpus_size = round(np.sum([len(x) for x in corpus]),0)
 vocabulary = set(' '.join(corpus).split())
 vocab_size = len(vocabulary)
 
-# Table with corpus stats
 corpus_stats = PrettyTable()
 corpus_stats.field_names = ["Statistic", "Value"]
 corpus_stats.add_row(["Number of songs", tracks])
@@ -71,10 +60,9 @@ corpus_stats.add_row(["Vocabulary size (no stopwords)", vocab_size])
 
 print(corpus_stats)
 
-# Table with cluster stats: number of songs in each cluster, unique artists 
+# Cluster stats number of songs in each cluster, unique artists 
 artists_gb = merged.groupby('cluster')['Artist']
 tracks_gb = merged.groupby('cluster')['track_id']
-
 artists_gb.nunique() # Number of artists in each cluster
 tracks_gb.nunique() # Number of songs in each cluster
 
@@ -85,7 +73,7 @@ top_artists = top_artists.to_dict()
 def song_blurb(artist):
     track = merged[merged['Artist'] == artist]['track_id'].iloc[0] # first result
     track_name = merged[merged['track_id'] == track]['Title'].iloc[0]
-    text = lyrics.get_lyrics(track)
+    text = prep.get_lyrics(track)
     blurb = " ".join(text.split('\n\n')[0:2]) # first two verses
     result = "Here are the first couple verses of {} by {}: \n {}".format(track_name, artist, blurb)
     return print(result)
@@ -94,18 +82,11 @@ song_blurb(top_artists['2'])
 
 # Most frequent words ranks with frequncy and average frequency
 # Show word cloud, maybe one for each clusterfrom wordcloud 
-from wordcloud import WordCloud
-import matplotlib.pyplot as plt
-import mirex_models
 
-# Join all lyrics into a single string
-corpus = ' '.join(mirex_models.corpus)
 
-# Generate the word cloud
+# Generate general wordcloud
+corpus = ' '.join(mirex_models.corpus) # Join all lyrics into a single string
 wordcloud = WordCloud(width=800, height=400, background_color='white').generate(corpus)
-
-
-# General wordcloud
 plt.figure(figsize=(10, 5))
 plt.imshow(wordcloud, interpolation='bilinear')
 plt.axis('off')
@@ -129,5 +110,3 @@ for (cluster, data), ax in zip(grouped, axes.flatten()):
 
 plt.tight_layout()
 plt.show()
-
-'''According to these word clouds, it sounds like artists have got to know a lot about love. '''

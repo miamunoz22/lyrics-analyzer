@@ -5,18 +5,17 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.svm import LinearSVC
-
 import matplotlib.pyplot as plt
 import seaborn as sb
 import pandas as pd
 import numpy as np
 import os
 
-import lyrics
+import prep
 
 '''ADD SUMMARY'''
 
-lyrics_df = lyrics.lyrics_df
+lyrics_df = prep.lyrics_df
 
 corpus = list(lyrics_df['lyrics'])
 labels = list(lyrics_df['cluster'])

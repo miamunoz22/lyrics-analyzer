@@ -14,11 +14,11 @@ import pandas as pd
 import numpy as np
 import os
 
-import lyrics
+import prep
 
 '''ADD SUMMARY'''
 
-lyrics_df = lyrics.lyrics_df
+lyrics_df = prep.lyrics_df
 
 corpus = list(lyrics_df['lyrics'])
 labels = list(lyrics_df['cluster'])

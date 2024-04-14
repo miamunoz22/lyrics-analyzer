@@ -7,12 +7,13 @@ import numpy as np
 import os
 import re
 
-''' The three formats in Mirex data follow the same file 
-naming scheme: so file 004.mp3, 004.txt and 004.mid 
-correspond to the same song. There are 903 mp3 files but only
-764 lyrics files in this dataset'''
+''' 
+This script will prep/clean the Mirex data for use in exploratory data analysis (EDA) and modelling.
 
-# Using song-cleaner.csv because the original dataset had one row with an extra column
+The three formats in Mirex data follow the same file naming scheme: so file 004.mp3, 004.txt and 004.mid 
+correspond to the same song. There are 903 mp3 files but only 764 lyrics files in this dataset. '''
+
+# Using song-cleaner.csv because the original dataset had one row with an extra, empty column.
 songs = pd.read_csv('dataset/songs-cleaner.csv')
 
 # Inspecting the data
@@ -30,7 +31,7 @@ songs['Last Modified'] = pd.to_datetime(songs['Last Modified'], format='%d-%m-%Y
 songs['Filename'] = songs['Filename'].str.replace('.mp3', '')
 songs.rename(columns={'Filename': 'track_id'}, inplace=True)
 
-# Creating a simplified dataframe
+# Creating a simplified dataframe to hold track, cluster, and lyrics info
 lyrics_df = pd.DataFrame(songs['track_id'])
 lyrics_df['cluster'] = None
 lyrics_df['description'] = None
