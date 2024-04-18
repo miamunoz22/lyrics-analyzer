@@ -13,7 +13,7 @@ import os
 
 import prep
 
-'''ADD SUMMARY'''
+'''Script to benchmark classification models.'''
 
 lyrics_df = prep.lyrics_df
 
@@ -42,6 +42,7 @@ for model in models:
         entries.append((model_name, fold, accuracy))
     
 cv_df = pd.DataFrame(entries, columns=['model_name', 'fold', 'accuracy'])
+cv_df.groupby('model_name')['accuracy'].mean()
 
 sb.boxplot(x='model_name', y='accuracy', data=cv_df)
 sb.stripplot(x='model_name', y='accuracy', data=cv_df, size=8, jitter=True, edgecolor="gray", linewidth=2)
@@ -67,6 +68,8 @@ best_log_classifier.fit(x_train, y_train)
 
 # Evaluate the model on the test set
 y_pred = best_log_classifier.predict(x_test)
+best_accs = cross_val_score(best_log_classifier, features, labels, scoring='accuracy', cv=CV)
+print("Average Accuracy:", np.mean(best_accs))
 
 # Plot results
 confused = confusion_matrix(y_test, y_pred)
@@ -78,6 +81,4 @@ plt.show()
 
 print(classification_report(y_test, y_pred))
 
-# Achieved a whopping accuracy of 38%!
-
-# INSERT COLUMN CHART WITH THE RESULTS'''
+# Achieved a whopping accuracy of 40%!
