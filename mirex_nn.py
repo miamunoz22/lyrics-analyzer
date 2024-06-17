@@ -16,13 +16,12 @@ import os
 
 import prep
 
-'''ADD SUMMARY'''
+'''Using a NN model separate from the bechmarked models'''
 
 lyrics_df = prep.lyrics_df
 
 corpus = list(lyrics_df['lyrics'])
 labels = list(lyrics_df['cluster'])
-#labels = list(lyrics_df['description'])
 
 x_train, x_test, y_train, y_test = train_test_split(corpus, labels, test_size=0.3, random_state=22)
 
